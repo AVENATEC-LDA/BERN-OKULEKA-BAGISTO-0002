@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
@@ -6,25 +6,30 @@ ENV CACHE_STORE=file
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-RUN apk add --no-cache \
-    bash \
-    curl \
-    git \
-    nginx \
-    supervisor \
-    unzip \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    freetype-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    icu-dev \
-    libzip-dev \
-    zlib-dev \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        curl \
+        git \
+        nginx \
+        supervisor \
+        unzip \
+        libpng-dev \
+        libjpeg-dev \
+        libwebp-dev \
+        libfreetype6-dev \
+        libonig-dev \
+        libxml2-dev \
+        libicu-dev \
+        libzip-dev \
+        zlib1g-dev \
+        libcurl4-openssl-dev \
+        default-mysql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql intl bcmath gd zip opcache calendar \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . /var/www/html
 WORKDIR /var/www/html

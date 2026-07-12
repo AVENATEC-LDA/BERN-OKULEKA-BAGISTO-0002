@@ -4,7 +4,8 @@ set -eu
 cd /var/www/html
 
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/framework/testing bootstrap/cache public/uploads
-chown -R www-data:www-data /var/www/html
+mkdir -p /var/run/php /run/nginx
+chown -R www-data:www-data /var/www/html /var/run/php /run/nginx
 chmod -R 775 storage bootstrap/cache public
 
 if [ ! -f .env ]; then
