@@ -26,9 +26,9 @@ RUN apk add --no-cache \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
-RUN cp .env.example .env \
+RUN mkdir -p bootstrap/cache storage/framework/{cache,sessions,views,testing} public/uploads \
+    && cp .env.example .env \
     && composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
-    && mkdir -p storage/framework/{cache,sessions,views,testing} bootstrap/cache public/uploads \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache public
 
