@@ -41,9 +41,10 @@ RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions 
     && chmod -R 775 storage bootstrap/cache public
 
 COPY docker/dokploy/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/dokploy/default-site.conf /etc/nginx/conf.d/default.conf
 COPY docker/dokploy/supervisord.conf /etc/supervisord.conf
 COPY docker/dokploy/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN rm -f /etc/nginx/sites-enabled/default && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 
