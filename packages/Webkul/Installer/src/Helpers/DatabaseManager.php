@@ -90,13 +90,20 @@ class DatabaseManager
     public function migrateFresh(): bool
     {
         try {
-            Artisan::call('migrate:fresh');
+            $exitCode = Artisan::call('migrate:fresh', [
+                '--force' => true,
+                '--seed' => false,
+            ]);
+
+            if ($exitCode !== 0) {
+                throw new Exception("migrate:fresh failed with exit code {$exitCode}");
+            }
 
             return true;
         } catch (Exception $e) {
             report($e);
 
-            return false;
+            throw $e;
         }
     }
 

@@ -59,9 +59,18 @@ class InstallerController extends Controller
             ], 500);
         }
 
-        return $this->databaseManager->migrateFresh()
-            ? response()->json(['migrated' => true])
-            : response()->json(['migrated' => false], 500);
+        try {
+            $this->databaseManager->migrateFresh();
+
+            return response()->json(['migrated' => true]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'migrated' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
