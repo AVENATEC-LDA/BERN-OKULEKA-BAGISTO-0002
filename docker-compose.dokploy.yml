@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/dokploy/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_KEY: ${APP_KEY:-}
+      APP_LOCALE: ${APP_LOCALE:-en}
+      APP_CURRENCY: ${APP_CURRENCY:-USD}
+      APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      APP_ADMIN_URL: ${APP_ADMIN_URL:-admin}
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-bagisto}
+      DB_USERNAME: ${DB_USERNAME:-bagisto}
+      DB_PASSWORD: ${DB_PASSWORD:-bagisto}
+      REDIS_CLIENT: ${REDIS_CLIENT:-predis}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      CACHE_STORE: ${CACHE_STORE:-redis}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
+      SESSION_DRIVER: ${SESSION_DRIVER:-redis}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK:-public}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+    ports:
+      - "80:80"
+    volumes:
+      - app-storage:/var/www/html/storage
+      - app-public:/var/www/html/public
+
+volumes:
+  app-storage:
+  app-public:
