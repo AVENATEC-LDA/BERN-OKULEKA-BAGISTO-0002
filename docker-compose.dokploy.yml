@@ -5,9 +5,7 @@ services:
       dockerfile: docker/dokploy/Dockerfile
     restart: unless-stopped
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
+      elasticsearch:
         condition: service_started
     environment:
       APP_ENV: ${APP_ENV:-production}
@@ -29,41 +27,30 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       CACHE_STORE: ${CACHE_STORE:-redis}
-      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-sync}
-      SESSION_DRIVER: ${SESSION_DRIVER:-redis}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      SESSION_DRIVER: ${SESSION_DRIVER:-database}
       FILESYSTEM_DISK: ${FILESYSTEM_DISK:-public}
       MAIL_MAILER: ${MAIL_MAILER:-log}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-http://elasticsearch:9200}
     ports:
-      - "80:80"
+      - "${APP_PORT:-8080}:80"
     volumes:
       - app-storage:/var/www/html/storage
       - app-public:/var/www/html/public
 
-  mysql:
-    image: mysql:8.4
+  elasticsearch:
+    image: elasticsearch:8.11.0
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-bagisto}
-      MYSQL_USER: ${DB_USERNAME:-bagisto}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-bagisto}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
     volumes:
-      - mysql-data-v2:/var/lib/mysql
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis-data:/data
+      - elasticsearch-data:/usr/share/elasticsearch/data
 
 volumes:
   app-storage:
   app-public:
-  mysql-data-v2:
-  redis-data:
+  elasticsearch-data:
