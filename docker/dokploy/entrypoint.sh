@@ -3,7 +3,7 @@ set -eu
 
 cd /var/www/html
 
-mkdir -p storage/framework/{cache,sessions,views,testing} bootstrap/cache public/uploads
+mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/framework/testing bootstrap/cache public/uploads
 chown -R www-data:www-data /var/www/html
 chmod -R 775 storage bootstrap/cache public
 

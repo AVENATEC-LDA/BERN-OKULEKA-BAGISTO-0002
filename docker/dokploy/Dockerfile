@@ -2,6 +2,9 @@ FROM php:8.3-fpm-alpine
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
+ENV CACHE_STORE=file
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
 RUN apk add --no-cache \
     bash \
@@ -26,7 +29,7 @@ RUN apk add --no-cache \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
-RUN mkdir -p bootstrap/cache storage/framework/{cache,sessions,views,testing} public/uploads \
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/framework/testing public/uploads \
     && cp .env.example .env \
     && composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
     && chown -R www-data:www-data /var/www/html \
