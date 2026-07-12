@@ -93,27 +93,21 @@ class InstallerController extends Controller
             )
         );
 
-        $isEnvVariablesUpdated = $this->environmentManager->updateEnvVariables($allParameters);
+        $this->environmentManager->loadEnvConfigs();
 
-        if ($isEnvVariablesUpdated) {
-            $isSeeded = $this->databaseManager->seed([
-                'default_locales' => $appLocale,
-                'default_currency' => $appCurrency,
-                'allowed_locales' => $allowedLocales,
-                'allowed_currencies' => $allowedCurrencies,
-                'skip_admin_creation' => true,
-            ]);
+        $isSeeded = $this->databaseManager->seed([
+            'default_locales' => $appLocale,
+            'default_currency' => $appCurrency,
+            'allowed_locales' => $allowedLocales,
+            'allowed_currencies' => $allowedCurrencies,
+            'skip_admin_creation' => true,
+        ]);
 
-            $this->environmentManager->storageLink();
+        $this->environmentManager->storageLink();
 
-            $this->environmentManager->optimizeClear();
-
-            return $isSeeded
-                ? response()->json(['seeded' => true])
-                : response()->json(['seeded' => false], 500);
-        }
-
-        return response()->json(['seeded' => false], 500);
+        return $isSeeded
+            ? response()->json(['seeded' => true])
+            : response()->json(['seeded' => false], 500);
     }
 
     /**
