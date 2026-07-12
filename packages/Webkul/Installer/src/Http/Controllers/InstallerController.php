@@ -95,19 +95,28 @@ class InstallerController extends Controller
 
         $this->environmentManager->loadEnvConfigs();
 
-        $isSeeded = $this->databaseManager->seed([
-            'default_locales' => $appLocale,
-            'default_currency' => $appCurrency,
-            'allowed_locales' => $allowedLocales,
-            'allowed_currencies' => $allowedCurrencies,
-            'skip_admin_creation' => true,
-        ]);
+        try {
+            $isSeeded = $this->databaseManager->seed([
+                'default_locales' => $appLocale,
+                'default_currency' => $appCurrency,
+                'allowed_locales' => $allowedLocales,
+                'allowed_currencies' => $allowedCurrencies,
+                'skip_admin_creation' => true,
+            ]);
 
-        $this->environmentManager->storageLink();
+            $this->environmentManager->storageLink();
 
-        return $isSeeded
-            ? response()->json(['seeded' => true])
-            : response()->json(['seeded' => false], 500);
+            return $isSeeded
+                ? response()->json(['seeded' => true])
+                : response()->json(['seeded' => false], 500);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'seeded' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

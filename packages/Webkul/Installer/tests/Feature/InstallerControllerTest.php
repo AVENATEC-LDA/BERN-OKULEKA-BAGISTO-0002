@@ -36,3 +36,31 @@ it('does not clear caches during seeding so the installation request is not inte
     expect($response->getStatusCode())->toBe(200)
         ->and($response->getData(true))->toHaveKey('seeded', true);
 });
+
+it('returns the underlying seeding exception message when the seeder fails', function () {
+    $environmentManager = Mockery::mock(EnvironmentManager::class);
+    $databaseManager = Mockery::mock(DatabaseManager::class);
+    $serverRequirements = Mockery::mock(ServerRequirements::class);
+
+    $environmentManager->shouldReceive('loadEnvConfigs')->once();
+    $databaseManager->shouldReceive('seed')->once()->andThrow(new RuntimeException('duplicate entry')); 
+
+    $request = Request::create('/install/api/run-seeder', 'POST', [
+        'selectedParameters' => [
+            'allowed_locales' => ['en'],
+        ],
+        'allParameters' => [
+            'app_locale' => 'en',
+            'app_currency' => 'USD',
+        ],
+    ]);
+
+    $this->app->instance('request', $request);
+
+    $controller = new InstallerController($serverRequirements, $environmentManager, $databaseManager);
+
+    $response = $controller->runSeeder();
+
+    expect($response->getStatusCode())->toBe(500)
+        ->and($response->getData(true)['message'])->toBe('duplicate entry');
+});
