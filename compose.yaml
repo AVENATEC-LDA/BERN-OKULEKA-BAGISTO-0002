@@ -32,8 +32,8 @@ services:
       FILESYSTEM_DISK: ${FILESYSTEM_DISK:-public}
       MAIL_MAILER: ${MAIL_MAILER:-log}
       ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-http://elasticsearch:9200}
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     volumes:
       - app-storage:/var/www/html/storage
       - app-public:/var/www/html/public
