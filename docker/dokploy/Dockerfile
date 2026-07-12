@@ -49,4 +49,4 @@ RUN rm -f /etc/nginx/sites-enabled/default && chmod +x /usr/local/bin/entrypoint
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
