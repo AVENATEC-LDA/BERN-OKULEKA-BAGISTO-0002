@@ -1,0 +1,216 @@
+# CHANGELOG for v2.4
+
+This changelog consists of the bug & security fixes and new features being included in the releases listed below.
+
+## **v2.4.8 (8th of July 2026)** - *Release*
+
+- Security fixes.
+
+- Added a "remove item" affordance to the storefront quantity selector: on the cart and mini-cart, when a line item's quantity reaches the minimum (1) the minus icon is replaced with a trash icon that removes the item. Enabled via an opt-in `removable` prop on the `quantity-changer` component (default off), so add-to-cart quantity selectors on product, bundle, grouped, booking, and wishlist pages keep their existing behavior.
+
+- Fixed the installer's `.env` parser (`EnvironmentManager::getEnvVariable()`) truncating environment values that contain an `=` (e.g. `DB_PASSWORD="examplePassword="`), which caused database authentication failures during `php artisan bagisto:install` even though the same `.env` worked with standard Laravel commands. Values are now split on the first `=` only; the parser also preserves spaces inside quoted values and matches keys exactly instead of by substring.
+
+- Made sitemaps channel-wise: a sitemap can now be assigned to one or more channels (via a new `sitemap_channels` pivot table), and the sitemap files are generated per channel — each using that channel's hostname, root-category subtree, and channel-scoped products and CMS pages, written under `sitemaps/<channel-code>/`. The admin sitemap listing shows the associated channels and a per-channel "Link for Google" for each entry.
+
+## **v2.4.7 (24th of June 2026)** - *Release*
+
+- Security fixes.
+
+- "Apply Tax On" setting (Before/After Discount) under Sales → Taxes → Calculation Settings to control whether tax is calculated on the original product price or on the discounted price when a cart-rule/coupon discount is applied, plus an optional per-product tax breakdown in the cart and checkout summary.
+
+- #11344 [fixed] - Fixed incorrect payment amounts for currencies whose ISO 4217 minor units are not two decimals in the Stripe and PayPal gateways. Currencies are now seeded with a `decimal` value (e.g. `0` for JPY/KRW, `3` for KWD/BHD, `2` by default); Stripe converts amounts to the smallest currency unit using `10 ^ decimal` instead of a hardcoded `× 100`, and PayPal rounds to the currency's decimal places, preventing 100× overcharges on zero-decimal currencies and undercharges on three-decimal currencies.
+
+- #11331 [fixed] - Replaced deprecated Venezuelan Bolivar currency code `VEF` with `VES` in seeders and installer configurations, ensuring correct exchange rate synchronization with modern exchange rate APIs.
+
+- #11316 [fixed] - Fixed the rich-text (TinyMCE) sanitizer stripping tables and `class`/`style` attributes from product/category descriptions, CMS pages, and email templates on save, so tables and formatting inserted in the editor no longer disappear. The HTMLPurifier allowlist now permits table elements and `class`/`style` (with an expanded set of safe CSS properties) while still removing scripts, event handlers, `javascript:`/`data:` URLs, and unsafe CSS. Also fixed theme static-content custom CSS being corrupted by the HTML purifier — valid selectors such as the `>` child combinator were entity-encoded — by sanitizing it against `</style>` context breakout instead of running it through the HTML purifier.
+
+- #10963 [fixed] - Fixed a required multiselect attribute on the product edit page failing validation on save until the field was manually re-interacted with, because the previously saved values were not registered with the form validator on page load.
+
+## **v2.4.6 (5th of June 2026)** - *Release*
+
+* Help and resources added.
+
+* Security fixes.
+
+## **v2.4.5 (2nd of June 2026)** - *Release*
+
+* Added EU Withdrawal feature (Directive (EU) 2023/2673, Article 11a CRD) — customers and guests can withdraw from a contract online via a "Withdraw from contract" button on order pages and a public lookup form, with durable-medium confirmation emails, an admin datagrid + timeline view for managing withdrawals, and a per-channel enable toggle.
+
+* Added PhonePe payment gateway integration.
+
+* Refined Playwright testcases.
+
+* Security fixes.
+
+## **v2.4.4 (5th of May 2026)** - *Release*
+
+* Fixed wrong "From" and "To" dates on the admin Bookings data grid and calendar view caused by the Carbon 3 timezone behavior change in the Laravel 12 upgrade. `Carbon::createFromTimestamp()` now returns UTC by default instead of the app timezone, so the booking timestamps are explicitly converted via `->timezone(config('app.timezone'))` in `BookingDataGrid` and `BookingController`.
+
+* Optimized cart rule evaluation to reduce repeated database lookups during cart total calculation, improving cart and checkout performance.
+
+* Refined the admin cart-rule create/edit pages with a clearer Coupon section, a context-aware Actions card, and a dedicated Generated Coupons datagrid with a modal-based bulk-code generator.
+
+* Refined the storefront cart and onepage checkout summaries with `+` / `−` indicators, a collapsed dual tax-mode display, an expandable Discount breakdown, and a modernized applied-coupon pill.
+
+* #10832 [feature] - Added a "Sales By Coupon" report to the admin sales reporting dashboard, with a coupon-code badge linking to the corresponding cart rule edit page and a drill-down "View Details" listing showing each order that used a coupon (order ID linking to the order detail, coupon code linking to the cart rule).
+
+* #8738 [fixed] - Added column sorting on every reporting list page (Sales / Customers / Products) with sort direction indicators in the column header, fixing the previously non-functional click target.
+
+## **v2.4.3 (24th of April 2026)** - *Release*
+
+* Ported all booking product bug fixes from the 2.3 branch into 2.4. Key highlights:
+  - Added admin-side order creation support for booking products across appointment, event, rental, default, and table sub-types.
+  - Fixed booking slot overlap detection and corrected the calendar window generation for appointment bookings.
+  - Fixed display pricing for rental and event sub-types with a "starting from" price on listings and corrected strike-through pricing.
+  - Hardened cart handling for booking items (quantity updates, missing-ticket guards, inverted rental range checks).
+  - Fixed booking product import by updating the data-transfer sample files and correcting the importer for booking attributes.
+
+## **v2.4.2 (13th of April 2026)** - *Release*
+
+* Added support for Romanian language.
+
+* Fixed product 404 when locale-specific URL keys differ across locales by adding cross-locale fallback in product slug resolution and locale-aware URL rewrite redirects.
+
+* Upgraded image search to support AI-powered analysis via Laravel AI SDK (MagicAI), with TensorFlow.js as the default fallback. Configurable under Magic AI > Storefront Features > AI Image Search.
+
+* Added Base URL configuration field for Ollama provider in Magic AI settings.
+
+* Fixed RMA rules issues where inactive rules were still selectable on the product create/edit form, and where the "Create" modal would update the last-edited rule after an edit modal had been opened.
+
+* #11220 [fixed] - Fixed SQL injection in DataGrid sort column and unauthenticated path traversal via ImageCache.
+
+* #11212 [fixed] - Fixed TypeError in Carbon when RESPONSE_CACHE_ENABLED is enabled.
+
+* #11013 [fixed] - Fixed an issue where the order date range filter accepted a single date input and returned no results.
+
+## **v2.4.1 (23rd of March 2026)** - **Release**
+
+* Fixed an issue where the price slider was not displaying on the layered navigation.
+
+* Fixed an issue where static content was pointing to demo categories and giving 404 errors when installed without sample products.
+
+* #11207 [fixed] - Performed a major update and cleanup of Polish translations across both Admin and Shop sections.
+
+* #10792 [feature] - Added Cache Management in Admin Configuration panel.
+
+## **v2.4.0 (19th of March 2026)** - **Release**
+
+### New Features
+
+* **[Laravel 12 Upgrade]** Upgraded framework to Laravel 12 with comprehensive modernization:
+  - Fixed Carbon date/time type strictness issues (int/float parameters, non-null timezones).
+  - Modernized all legacy PHP date functions (`strtotime()`, `date()`, `date_default_timezone_set()`) to Carbon equivalents.
+  - Implemented timezone fallback logic using `config('app.timezone')` for channel-based operations.
+  - Updated PDF response headers to match Laravel 12 format (Content-Disposition).
+  - Enhanced date handling methods in Core helper with proper Carbon integration.
+
+* Implemented two-factor authentication (2FA) for admin users to enhance account security.
+
+* Migrated from Google reCAPTCHA v2 to Google reCAPTCHA Enterprise for enhanced bot protection.
+
+* Added Stripe payment gateway integration with secure checkout session.
+
+* Added Razorpay payment gateway integration with drop-in UI checkout experience.
+
+* Added PayU payment gateway integration with redirect-based checkout flow.
+
+* Upgraded PayPal SDK from abandoned v1 to modern v2 with improved reliability and security. Refactored PayPal integration to use controller-based transaction handling and modernized IPN processing with Laravel HTTP client.
+
+* Added comprehensive Return Merchandise Authorization (RMA) system with complete order return management.
+
+* Integrated Laravel AI SDK for Magic AI, refactoring the provider and model layer into per-provider enums with a unified `AiProvider` entry point and updated AI model configurations.
+
+* Added fresh demo products during the installation process with updated translations.
+
+* Added Pest and Playwright test cases.
+
+* #11126 [feature] - Added SMTP configuration support from the admin panel.
+
+### Changes
+
+* Removed `shetabit/visitor` package and all visitor tracking functionality including dashboard visitors widget, products with most visits reporting, customers traffic reporting, and purchase funnel visitor metrics.
+
+### Bug Fixes
+
+* Included all bug fix updates from version 2.3.
+
+* Optimized RMA-related queries and introduced a return period column in the order items table.
+
+* Fixed issues with language switching in the installation wizard and corrected PHP configuration texts.
+
+* Fixed automatic application URL detection and automatic timezone selection during installation.
+
+* Fixed backend validation and VeeValidate error handling to ensure proper integration with Laravel backend validation in the installer package.
+
+* #11100 [fixed] - Fixed an issue where updating the return window rule affected previously placed orders.
+
+### Documentation
+
+* Updated the upgrade guide (UPGRADE.md) with breaking changes from v2.3 including Laravel 12, reCAPTCHA Enterprise, PayPal SDK upgrade, visitor tracking removal, and Magic AI SDK migration.
+
+## **v2.4.0-beta6 (18th of March 2026)** - **Release**
+
+* Removed `shetabit/visitor` package and all visitor tracking functionality including dashboard visitors widget, products with most visits reporting, customers traffic reporting, and purchase funnel visitor metrics.
+
+* Updated the upgrade guide (UPGRADE.md) with breaking changes from v2.3 including Laravel 12, reCAPTCHA Enterprise, PayPal SDK upgrade, visitor tracking removal, and Magic AI SDK migration.
+
+* Rewrote AGENTS.md with accurate codebase documentation covering architecture, conventions, commands, and development guidelines.
+
+## **v2.4.0-beta5 (18th of March 2026)** - **Release**
+
+* Included bug fix updates from version 2.3.
+
+## **v2.4.0-beta4 (5th of March 2026)** - **Release**
+
+* Enhanced the Laravel AI SDK integration for Magic AI and improved the related configuration sections.
+
+* Updated all outdated AI models and image model configurations.
+
+## **v2.4.0-beta3 (3rd of March 2026)** - **Release**
+
+* Integrated Laravel AI SDK for Magic AI, refactoring the provider and model layer into per-provider enums with a unified `AiProvider` entry point.
+
+* #11126 [feature] - Added SMTP configuration support from the admin panel.
+
+* Merged all bug fixes and improvements from version 2.3.
+
+* Added pest and playwright testcases.
+
+## **v2.4.0-beta2 (17th of February 2026)** - **Release**
+
+* Updated the translations for all the dummy products.
+
+* Optimized RMA-related queries and introduced a return period column in the order items table.
+
+* Fixed issues with language switching in the installation wizard and corrected PHP configuration texts.
+
+* Fixed automatic application URL detection and automatic timezone selection during installation.
+
+* Fixed backend validation and VeeValidate error handling to ensure proper integration with Laravel backend validation in the installer package.
+
+* #11100 [fixed] - Fixed an issue where updating the return window rule affected previously placed orders.
+
+## **v2.4.0-beta1 (9th of February 2026)** - **Release**
+
+* **[Laravel 12 Upgrade]** Upgraded framework to Laravel 12 with comprehensive modernization:
+  - Fixed Carbon date/time type strictness issues (int/float parameters, non-null timezones).
+  - Modernized all legacy PHP date functions (`strtotime()`, `date()`, `date_default_timezone_set()`) to Carbon equivalents.
+  - Implemented timezone fallback logic using `config('app.timezone')` for channel-based operations.
+  - Updated PDF response headers to match Laravel 12 format (Content-Disposition).
+  - Enhanced date handling methods in Core helper with proper Carbon integration.
+
+* Implemented two-factor authentication (2FA) for admin users to enhance account security.
+
+* Migrated from Google reCAPTCHA v2 to Google reCAPTCHA Enterprise for enhanced bot protection.
+
+* Added Stripe payment gateway integration with secure checkout session.
+
+* Added Razorpay payment gateway integration with drop-in UI checkout experience.
+
+* Added PayU payment gateway integration with redirect-based checkout flow.
+
+* Upgraded PayPal SDK from abandoned v1 to modern v2 with improved reliability and security. Refactored PayPal integration to use controller-based transaction handling and modernized IPN processing with Laravel HTTP client.
+
+* Added comprehensive Return Merchandise Authorization (RMA) system with complete order return management.
+
+* Added fresh demo products during the installation process.

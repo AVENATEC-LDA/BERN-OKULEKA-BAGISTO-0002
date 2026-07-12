@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+node_modules
+.vscode
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+public/storage
+vendor
