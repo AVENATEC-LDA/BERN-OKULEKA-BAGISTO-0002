@@ -20,7 +20,7 @@ RUN apk add --no-cache \
     libzip-dev \
     zlib-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql intl bcmath gd zip opcache \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql intl bcmath gd zip opcache calendar \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . /var/www/html
