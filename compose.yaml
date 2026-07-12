@@ -40,14 +40,13 @@ services:
       - app-public:/var/www/html/public
 
   mysql:
-    image: mysql:8.4
+    image: mysql:8.0
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-bagisto}
       MYSQL_USER: ${DB_USERNAME:-bagisto}
       MYSQL_PASSWORD: ${DB_PASSWORD:-bagisto}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-    command: --default-authentication-plugin=caching_sha2_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
       interval: 10s
