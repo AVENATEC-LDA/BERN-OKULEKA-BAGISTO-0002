@@ -54,8 +54,24 @@ class InstallerController extends Controller
         $isDatabaseConnected = $this->databaseManager->checkDatabaseConnection();
 
         if (! $isDatabaseConnected) {
+            try {
+                $this->databaseManager->ensureDatabaseExists();
+
+                $isDatabaseConnected = $this->databaseManager->checkDatabaseConnection();
+            } catch (\Throwable $e) {
+                report($e);
+
+                return response()->json([
+                    'migrated' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+        }
+
+        if (! $isDatabaseConnected) {
             return response()->json([
                 'migrated' => false,
+                'message' => 'Unable to connect to the database. Verify the host, port, name, username, and password.',
             ], 500);
         }
 

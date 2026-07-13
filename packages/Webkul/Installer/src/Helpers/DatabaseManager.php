@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PDO;
 use Webkul\Installer\Database\Seeders\DatabaseSeeder as BagistoDatabaseSeeder;
 use Webkul\Installer\Database\Seeders\ProductTableSeeder;
 use Webkul\Product\Console\Commands\Indexer;
@@ -81,6 +82,42 @@ class DatabaseManager
             report($e);
 
             return false;
+        }
+    }
+
+    /**
+     * Drop all the tables and migrate in the database.
+     */
+    public function ensureDatabaseExists(): bool
+    {
+        try {
+            $connectionName = config('database.default', 'mysql');
+            $connectionConfig = config("database.connections.{$connectionName}", []);
+            $databaseName = $connectionConfig['database'] ?? null;
+
+            if (blank($databaseName)) {
+                throw new Exception('The database name is empty.');
+            }
+
+            $dsn = sprintf(
+                'mysql:host=%s;port=%s;dbname=mysql;charset=utf8mb4',
+                $connectionConfig['host'] ?? '127.0.0.1',
+                $connectionConfig['port'] ?? 3306,
+            );
+
+            $pdo = new PDO($dsn, $connectionConfig['username'] ?? null, $connectionConfig['password'] ?? null, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            ]);
+
+            $quotedDatabaseName = '`'.str_replace('`', '``', $databaseName).'`';
+
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS {$quotedDatabaseName} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
+            return true;
+        } catch (Exception $e) {
+            report($e);
+
+            throw $e;
         }
     }
 

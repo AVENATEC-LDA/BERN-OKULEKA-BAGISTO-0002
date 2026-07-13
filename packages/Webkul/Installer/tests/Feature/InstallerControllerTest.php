@@ -37,6 +37,36 @@ it('does not clear caches during seeding so the installation request is not inte
         ->and($response->getData(true))->toHaveKey('seeded', true);
 });
 
+it('creates the database before migration when the selected database is missing', function () {
+    $environmentManager = Mockery::mock(EnvironmentManager::class);
+    $databaseManager = Mockery::mock(DatabaseManager::class);
+    $serverRequirements = Mockery::mock(ServerRequirements::class);
+
+    $environmentManager->shouldReceive('generateEnv')->once();
+    $environmentManager->shouldReceive('loadEnvConfigs')->once();
+    $databaseManager->shouldReceive('checkDatabaseConnection')->once()->andReturn(false);
+    $databaseManager->shouldReceive('ensureDatabaseExists')->once()->andReturn(true);
+    $databaseManager->shouldReceive('checkDatabaseConnection')->once()->andReturn(true);
+    $databaseManager->shouldReceive('migrateFresh')->once()->andReturn(true);
+
+    $request = Request::create('/install/api/run-migration', 'POST', [
+        'db_hostname' => '127.0.0.1',
+        'db_port' => '3306',
+        'db_name' => 'bagisto',
+        'db_username' => 'root',
+        'db_password' => '',
+    ]);
+
+    $this->app->instance('request', $request);
+
+    $controller = new InstallerController($serverRequirements, $environmentManager, $databaseManager);
+
+    $response = $controller->runMigration($request);
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($response->getData(true))->toHaveKey('migrated', true);
+});
+
 it('returns the underlying seeding exception message when the seeder fails', function () {
     $environmentManager = Mockery::mock(EnvironmentManager::class);
     $databaseManager = Mockery::mock(DatabaseManager::class);
