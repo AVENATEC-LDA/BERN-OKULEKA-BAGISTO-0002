@@ -1383,6 +1383,8 @@
                                             setErrors(error.response.data.errors);
                                         } else if (error.response.data.message) {
                                             alert(error.response.data.message);
+                                        } else if (error.response.data.migrated === false) {
+                                            alert('Migration failed. Please check your database connection.');
                                         } else {
                                             alert('Migration failed. Please check your database connection.');
                                         }
