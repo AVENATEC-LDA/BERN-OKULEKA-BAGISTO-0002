@@ -102,8 +102,6 @@ class InstallerController extends Controller
             )
         );
 
-        $this->environmentManager->loadEnvConfigs();
-
         try {
             $isSeeded = $this->databaseManager->seed([
                 'default_locales' => $appLocale,
