@@ -132,8 +132,10 @@ class DatabaseManager
                 '--seed' => false,
             ]);
 
+            $output = Artisan::output();
+
             if ($exitCode !== 0) {
-                throw new Exception("migrate:fresh failed with exit code {$exitCode}");
+                throw new Exception($output ?: "migrate:fresh failed with exit code {$exitCode}");
             }
 
             return true;

@@ -47,35 +47,26 @@ class InstallerController extends Controller
      */
     public function runMigration(Request $request)
     {
-        $this->environmentManager->generateEnv($request->all());
+        try {
+            $this->environmentManager->generateEnv($request->all());
 
-        $this->environmentManager->loadEnvConfigs();
+            $this->environmentManager->loadEnvConfigs();
 
-        $isDatabaseConnected = $this->databaseManager->checkDatabaseConnection();
+            $isDatabaseConnected = $this->databaseManager->checkDatabaseConnection();
 
-        if (! $isDatabaseConnected) {
-            try {
+            if (! $isDatabaseConnected) {
                 $this->databaseManager->ensureDatabaseExists();
 
                 $isDatabaseConnected = $this->databaseManager->checkDatabaseConnection();
-            } catch (\Throwable $e) {
-                report($e);
+            }
 
+            if (! $isDatabaseConnected) {
                 return response()->json([
                     'migrated' => false,
-                    'message' => $e->getMessage(),
+                    'message' => 'Unable to connect to the database. Verify the host, port, name, username, and password.',
                 ], 500);
             }
-        }
 
-        if (! $isDatabaseConnected) {
-            return response()->json([
-                'migrated' => false,
-                'message' => 'Unable to connect to the database. Verify the host, port, name, username, and password.',
-            ], 500);
-        }
-
-        try {
             $this->databaseManager->migrateFresh();
 
             return response()->json(['migrated' => true]);
