@@ -82,6 +82,18 @@ class EnvironmentManager
     }
 
     /**
+     * Resolve a value, falling back to the existing environment value when the incoming value is empty.
+     */
+    protected function resolveEnvValue(mixed $value, mixed $fallback = null): mixed
+    {
+        if ($value === null || $value === '') {
+            return $fallback;
+        }
+
+        return $value;
+    }
+
+    /**
      * Update a single environment variable in `.env` file.
      */
     public function updateEnvVariable(string $key, string $value, bool $addQuotes = false): void
@@ -113,14 +125,14 @@ class EnvironmentManager
             $envParams['APP_TIMEZONE'] = $data['app_timezone'];
         }
 
-        if (isset($data['db_hostname'])) {
-            $envParams['DB_HOST'] = $data['db_hostname'];
-            $envParams['DB_DATABASE'] = $data['db_name'];
-            $envParams['DB_PREFIX'] = $data['db_prefix'] ?? '';
-            $envParams['DB_USERNAME'] = $data['db_username'];
-            $envParams['DB_PASSWORD'] = $data['db_password'];
-            $envParams['DB_CONNECTION'] = $data['db_connection'];
-            $envParams['DB_PORT'] = (int) $data['db_port'];
+        if (isset($data['db_hostname']) || isset($data['db_name']) || isset($data['db_username']) || isset($data['db_password']) || isset($data['db_port']) || isset($data['db_connection'])) {
+            $envParams['DB_HOST'] = $this->resolveEnvValue($data['db_hostname'] ?? null, $this->getEnvVariable('DB_HOST', 'mysql'));
+            $envParams['DB_DATABASE'] = $this->resolveEnvValue($data['db_name'] ?? null, $this->getEnvVariable('DB_DATABASE', 'bagisto'));
+            $envParams['DB_PREFIX'] = $this->resolveEnvValue($data['db_prefix'] ?? null, $this->getEnvVariable('DB_PREFIX', ''));
+            $envParams['DB_USERNAME'] = $this->resolveEnvValue($data['db_username'] ?? null, $this->getEnvVariable('DB_USERNAME', 'bagisto'));
+            $envParams['DB_PASSWORD'] = $this->resolveEnvValue($data['db_password'] ?? null, $this->getEnvVariable('DB_PASSWORD', 'bagisto'));
+            $envParams['DB_CONNECTION'] = $this->resolveEnvValue($data['db_connection'] ?? null, $this->getEnvVariable('DB_CONNECTION', 'mysql'));
+            $envParams['DB_PORT'] = (int) $this->resolveEnvValue($data['db_port'] ?? null, $this->getEnvVariable('DB_PORT', 3306));
         }
 
         try {
