@@ -198,10 +198,28 @@ class InstallerController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        $this->environmentManager->loadEnvConfigs();
+
+        if (! $this->databaseManager->checkDatabaseConnection()) {
+            return response()->json([
+                'admin_user_created' => false,
+                'message' => 'Unable to connect to the database before creating admin user.',
+            ], 500);
+        }
+
         $data = $request->only(['name', 'email', 'password']);
 
-        return $this->databaseManager->createAdminUser($data)
-            ? response()->json(['admin_user_created' => true])
-            : response()->json(['admin_user_created' => false], 500);
+        try {
+            $this->databaseManager->createAdminUser($data);
+
+            return response()->json(['admin_user_created' => true]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'admin_user_created' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
