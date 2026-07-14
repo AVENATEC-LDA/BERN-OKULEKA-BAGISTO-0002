@@ -157,16 +157,32 @@ class InstallerController extends Controller
 
         $allowedCurrencies = array_merge([$defaultCurrency], request()->input('selectedCurrencies'));
 
-        $isSeeded = $this->databaseManager->seedSampleProducts([
-            'default_locale' => $defaultLocale,
-            'allowed_locales' => $allowedLocales,
-            'default_currency' => $defaultCurrency,
-            'allowed_currencies' => $allowedCurrencies,
-        ]);
+        try {
+            $this->environmentManager->loadEnvConfigs();
 
-        return $isSeeded
-            ? response()->json(['sample_products_seeded' => true])
-            : response()->json(['sample_products_seeded' => false], 500);
+            if (! $this->databaseManager->checkDatabaseConnection()) {
+                return response()->json([
+                    'sample_products_seeded' => false,
+                    'message' => 'Unable to connect to the database before sample product seeding.',
+                ], 500);
+            }
+
+            $this->databaseManager->seedSampleProducts([
+                'default_locale' => $defaultLocale,
+                'allowed_locales' => $allowedLocales,
+                'default_currency' => $defaultCurrency,
+                'allowed_currencies' => $allowedCurrencies,
+            ]);
+
+            return response()->json(['sample_products_seeded' => true]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'sample_products_seeded' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
