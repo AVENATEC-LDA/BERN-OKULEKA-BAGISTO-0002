@@ -110,6 +110,15 @@ class InstallerController extends Controller
         );
 
         try {
+            $this->environmentManager->loadEnvConfigs();
+
+            if (! $this->databaseManager->checkDatabaseConnection()) {
+                return response()->json([
+                    'seeded' => false,
+                    'message' => 'Unable to connect to the database before seeding. Check DB credentials and host.',
+                ], 500);
+            }
+
             $isSeeded = $this->databaseManager->seed([
                 'default_locales' => $appLocale,
                 'default_currency' => $appCurrency,
