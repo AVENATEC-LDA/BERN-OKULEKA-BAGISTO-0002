@@ -44,9 +44,10 @@ COPY docker/dokploy/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/dokploy/default-site.conf /etc/nginx/conf.d/default.conf
 COPY docker/dokploy/supervisord.conf /etc/supervisord.conf
 COPY docker/dokploy/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/dokploy/php.ini /usr/local/etc/php/conf.d/99-bagisto.ini
 RUN rm -f /etc/nginx/sites-enabled/default && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
