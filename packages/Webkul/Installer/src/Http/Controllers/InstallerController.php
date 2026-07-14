@@ -210,7 +210,13 @@ class InstallerController extends Controller
         $data = $request->only(['name', 'email', 'password']);
 
         try {
-            $this->databaseManager->createAdminUser($data);
+            $created = $this->databaseManager->createAdminUser($data);
+
+            if (! $created) {
+                throw new \Exception('Failed to create admin user.');
+            }
+
+            $this->databaseManager->markAsInstalled();
 
             return response()->json(['admin_user_created' => true]);
         } catch (\Throwable $e) {

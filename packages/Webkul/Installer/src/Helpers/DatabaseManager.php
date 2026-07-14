@@ -5,6 +5,8 @@ namespace Webkul\Installer\Helpers;
 use Exception;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use PDO;
 use Webkul\Installer\Database\Seeders\DatabaseSeeder as BagistoDatabaseSeeder;
@@ -208,7 +210,19 @@ class DatabaseManager
         } catch (Exception $e) {
             report($e);
 
-            return false;
+            throw $e;
         }
+    }
+
+    /**
+     * Mark the application as installed by writing the installed marker.
+     */
+    public function markAsInstalled(): void
+    {
+        if (! file_exists(storage_path('installed'))) {
+            File::put(storage_path('installed'), 'Bagisto is successfully installed.');
+        }
+
+        Event::dispatch('bagisto.installed');
     }
 }
